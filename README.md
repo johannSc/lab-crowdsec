@@ -1,7 +1,7 @@
 # lab-crowdsec
 
 - [Déploiement du serveur Web](#déploiement-du-serveur-web)
-- [NMAP: Le couteau Suisse](#nmap)
+- [Déploiement de crowdsec: déploiement-de-crowdsec](#nmap)
 - [ZAP: Le truc de pro](#zap)
 - [DefectDojo: La représentation par graphes](#defectdojo)
 
@@ -16,141 +16,94 @@ Pour ce lab nous allons utiliser deux VMs distinctes:
 
 Installer Apache sous Debian 11
 
-On commence par mettre à jour le cache des paquets :
+On commence par mettre à jour le cache des paquets et installation des paquets:
 
-sudo apt-get update
+```
+apt update
+apt install -y apache2 apache2-utils
+```
 
-Ensuite, on installe le paquet "apache2" afin d'obtenir la dernière version d'Apache 2.4.
+Pour qu'Apache démarre automatiquement en même temps que Debian, il faut activer le service au démarrage :
 
-sudo apt-get install -y apache2
+```
+systemctl enable apache2
+```
 
-Pour qu'Apache démarre automatiquement en même temps que Debian, saisissez la commande ci-dessous (même si normalement c'est déjà le cas) :
+On test un accès depuis votre navigateur préféré en vous rendant sur http://localhost ou sur l'ip
 
-sudo systemctl enable apache2
-
-Synchronizing state of apache2.service with SysV service script with /lib/systemd/systemd-sysv-install.
-Executing: /lib/systemd/systemd-sysv-install enable apache2
-
-Suite à l'installation du paquet, le serveur Apache démarre directement. On devrait pouvoir accéder à sa page par défaut. Pour cela, il suffit de récupérer l'adresse IP du serveur :
-
-ip address
-
-Puis, à l'aide d'une machine équipée d'un navigateur, on peut accéder à notre serveur Apache :
-
-http://192.168.100.120
-
-Apache en ligne, sous Debian 11
-Apache en ligne, sous Debian 11
-
-Pour visualiser la version d'Apache que vous venez d'installer, c'est tout simple : exécutez la commande suivant :
-
-sudo apache2ctl -v
-Server version: Apache/2.4.51 (Debian)
-Server built: 2021-10-07T17:49:44
-
-Apache 2.4.51 est la dernière version d'Apache au moment où j'écris cet article.
-
-Avant d'aller plus loin, je vous recommande d'activer quelques modules d'Apache qui sont indispensables, notamment pour faire tourner un site Internet. Commençons par le module utilisé pour la réécriture d'URL :
-
-sudo a2enmod rewrite
-
-L'occasion de découvrir la commande "a2enmod" qui sert à activer un module. A l'inverse, la commande "a2dismod" sert à désactiver un module.
-
-Activons trois :autres modules :
+Plusieurs modes seront nécessaires:
 
     "deflate" pour la gestion de la compression, notamment en gzip, pour utiliser la mise en cache des pages sur votre site
     "headers" afin de pouvoir agir sur les en-têtes HTTP
     "ssl" pour gérer les certificats SSL et donc l'utilisation du protocole HTTPS
+    "rewrite" pour la réécriture d'URI
 
-sudo a2enmod deflate
-sudo a2enmod headers
-sudo a2enmod ssl
+```
+a2enmod rewrite
+a2enmod deflate
+a2enmod headers
+a2enmod ssl
+```
 
-Après avoir activé ou désactivé un module, ou modifié la configuration d'Apache, il faut redémarrer le service apache2 :
+Puis enfin on redémarre pour que ces mods soient pris en compte:
 
-sudo systemctl restart apache2
-
-Où se situent la configuration d'Apache et des sites dans tout ça ?
-
-Le fichier de configuration d'Apache 2 est le suivant :
-
-/etc/apache2/apache2.conf
-
-Dans un premier temps, il peut servir à configurer Apache pour ne pas afficher le numéro de version sur les pages d'erreurs. Même si cette option est gérable aussi dans le fichier "/etc/apache2/conf-enabled/security.conf", c'est au choix.
-
-    Note : pour la configuration qui concerne PHP, le fichier de configuration est différent : "/etc/php/7.4/apache2/php.ini"
-
-Tandis que pour déclarer les hôtes virtuels, en anglais "Virtual hosts", ce qui correspond aux différents sites hébergés par Apache (oui, un serveur Apache peut gérer plusieurs sites indépendamment), il faudra s'intéresser à ces deux dossiers :
-
-    Dossier qui contient les fichiers de configuration des sites disponibles : /etc/apache2/sites-available/
-    Dossier qui contient les fichiers de configuration (via un lien symbolique), des sites actifs : /etc/apache2/sites-enabled
-
-Par défaut, nous accédons à la page d'accueil d'Apache grâce à l'hôte virtuel déclaré dans le fichier "/etc/apache2/sites-enabled/000-default.conf", qui écoute sur le port 80 (HTTP) et dont la racine est le dossier "/var/www/html".
-
-Je vous invite à lire mon tutoriel dédié à la configuration d'un Virtual Host pour en savoir plus :
-
-    Tutoriel - Apache - Déclarer un Virtual Host
-
-Enfin, si vous souhaitez mettre en place l'authentification basique sur votre site, vous avez besoin de l'outil "htpasswd" inclus dans le paquet "apache2-utils" (comme d'autres outils). Vous pouvez l'installer à tout moment d'une simple commande :
-
-sudo apt-get install -y apache2-utils
+```
+systemctl restart apache2
+```
 
 ### PHP
 
-PHP va venir se greffer sur notre serveur Apache, comme une extension, afin de pouvoir traiter les scripts intégrés aux pages ".php". Afin d'y aller progressivement, installons le paquet "php" en lui-même :
+PHP va venir se greffer sur notre serveur Apache, comme une extension, afin de pouvoir traiter les scripts intégrés aux pages ".php". 
 
-sudo apt-get install -y php
+```
+apt install -y php php-pdo php-mysql php-zip php-gd php-mbstring php-curl php-xml php-pear php-bcmath
+```
 
-On peut voir que cette commande va installer une multitude de paquets :
+Pour vérifier que php est bien installé, exécutez la commande suivante :
 
-libapache2-mod-php7.4 libsodium23 php-common php7.4 php7.4-cli php7.4-common php7.4-json php7.4-opcache php7.4-readline
 
-C'est très bien, nous avons quelques modules de base indispensables et "libapache2-mod-php7.4" qui permet l'intégration avec Apache.
-
-Actuellement, c'est PHP 7.4 qui est dans les dépôts de Debian, même si PHP 8 est déjà disponible, toutes les applications ne sont pas encore compatibles. Il faut savoir que le support de PHP 7.4 assure les mises à jour de sécurité jusqu'au 28 novembre 2022. Ce qui laisse un peu de temps, mais il faut garder en tête qu'il faudra envisager de passer sur PHP 8.
-
-Avant d'aller plus loin, nous allons installer quelques paquets supplémentaires pour compléter l'installation de PHP sur notre serveur. Par exemple, pour permettre les interactions entre PHP et notre instance MariaDB.
-
-sudo apt-get install -y php-pdo php-mysql php-zip php-gd php-mbstring php-curl php-xml php-pear php-bcmath
-
-Suite à cette installation, je vous invite à vérifier quelle version de PHP vous venez d'installer. Exécutez la commande suivante :
-
+```
 php -v
-PHP 7.4.21 (cli) (built: Jul 2 2021 03:59:48) ( NTS )
+```
 
 Maintenant, pour nous assurer que notre moteur de script PHP est bien actif, nous allons créer un fichier "phpinfo.php" (ou un autre nom) à la racine de notre site Web :
 
-sudo nano /var/www/html/phpinfo.php
+```
+nano /var/www/html/phpinfo.php
+
+```
 
 Dans ce fichier, indiquez le code suivant :
 
+```
 <?php
 phpinfo();
 ?>
+```
 
-Elle sera accessible à partir de cette adresse :
-
-http://192.168.100.120/phpinfo.php
-
-Cette page donne énormément d'informations sur toute la configuration de PHP et de notre serveur Apache. Il est fortement recommandé de la mettre en place seulement quand c'est nécessaire. Autrement dit, vous ne devez pas laisser cette page accessible par n'importe qui.
+Et tester d'accéder à l'url suivante: http://localhost/phpinfo.php
 
 ### Une page PHP
 
-On va se contenter d'une simple page d'accueil "index.php" avec un message "Hello !". Pour créer cette page, suivez ces quelques étapes.
+On va se contenter d'une simple page d'accueil "index.php" avec un message "Hello !". Pour créer cette page:
 
-sudo nano /var/www/html/index.php
+```
+nano /var/www/html/index.php
+```
 
-Insérez ce petit bout de code :
+Insérez le code suivant:
 
+```
 <?php
 echo "<h1>Hello !</h1>";
 ?>
+```
 
 Enfin, supprimez la page d'accueil d'origine d'Apache.
 
-sudo rm /var/www/html/index.html
-
-Le serveur Web est prêt, nous avons une page PHP en place. Elle est accessible sur le domaine it-connect.tech.
+```
+rm /var/www/html/index.html
+```
 
 ## Déploiement de crowdsec
 
