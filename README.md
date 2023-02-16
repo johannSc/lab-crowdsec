@@ -213,7 +213,7 @@ Pour vérifier que l'installation est opérationnelle, exécutez simplement :
 composer
 ```
 
-Nous avons besoin de Git pour installer ce Bouncer afin de cloner le projet. Pour installer Git :
+Nous avons besoin de Git pour installer ce bouncer afin de cloner le projet. Pour installer Git :
 
 ```
 apt install git
@@ -275,24 +275,20 @@ cscli decisions add --ip X.X.X.X
 
 ### Mise en place d'un captcha
 
-Avec la configuration actuelle, l'adresse IP sera bloquée pour une durée de 4 heures et l'utilisateur n'a pas de possibilité d'être débloqué pendant ce temps. À moins de prendre la peine de contacter le Webmaster du site...
-
-Pour limiter l'impact des éventuels faux positifs sur la règle "bad user agents", nous allons présenter un captcha à l'utilisateur bloqué, plutôt qu'un blocage pur. De cette façon, un robot sera bloqué tandis qu'un utilisateur réel pourra  déverrouiller l'accès au site. Nous allons réserver le même sort au crawlers malveillants (robots d'exploration).
+Avec la configuration actuelle, l'adresse IP sera bloquée pour une durée de 4 heures. Pour limiter l'impact des éventuels faux positifs sur la règle "bad user agents", nous allons présenter un captcha à l'utilisateur bloqué, plutôt qu'un blocage direct.
 
 Pour cela, il faut éditer le fichier de configuration nommé "profiles.yaml", qui est au format YAML, comme son nom l'indique.
 
-sudo nano /etc/crowdsec/profiles.yaml
+```
+nano /etc/crowdsec/profiles.yaml
+```
 
 Ce fichier contient une configuration par défaut qui sert à bloquer les adresses IP pendant 4 heures, peu importe le type d'attaque détectée. Nous souhaitons conserver ce comportement, à l'exception de deux types d'alertes :
 
     http-crawl-non_statics
     http-bad-user-agent
 
-Il faut que l'on ajoute notre configuration au début du fichier, et non pas à la fin. À ce jour, CrowdSec gère la priorité par rapport à l'ordre dans le fichier puisque dès que l'on match sur une règle, on ne vérifie pas la suite (un peu sur le même principe que les ACL sur un routeur, finalement) compte tenu de la présence de la directive "on_success: break" (voir ci-dessous).
-
-Autrement dit, si l'on ajoute notre configuration spécifique à la suite dans le fichier profiles.yaml, cela ne fonctionnera pas, car la première règle correspondra (matchera) toujours, et donc notre règle ne sera pas prise en compte.
-
-Voici le bout de code à ajouter au tout début du fichier :
+Voici le code à ajouter **au tout début** du fichier :
 
 ```
 # Bad User agents + Crawlers - Captcha 4H
@@ -306,43 +302,16 @@ on_success: break
 ---
 ```
 
-La partie "filters" sert à spécifier que l'on cible seulement les scénarios d'alertes "http-crawl-non_statics" et "http-bad-user-agent". Ensuite, au niveau du "type", on spécifie "captcha" au lieu de "ban" qui est l'action standard.
+Enfin il faut relancer crowdsec:
 
-Enfin, la partie "duration" sert à spécifier la durée pendant laquelle on présente un captcha à l'adresse IP associée au "blocage". En l'occurrence, 4h par défaut, mais vous pouvez modifier cette valeur.
+```
+systemctl restart crowdsec
+```
 
-Au final, vous obtenez ceci :
+Avant de refaire des tests, pensez bien à supprimer votre ip dans celles bannies. On peut utiliser la commande curl pour établir une session tcp en précisant un user agent moisi, par exemple _Nikto_:
 
-Sauvegardez le fichier et fermez-le. Il ne reste plus qu'à relancer CrowdSec :
+```
+curl -I ip_Debian11 -H "User-Agent: Nikto"
+```
 
-sudo systemctl restart crowdsec
-
-Avant de refaire des tests, on va supprimer la décision qui s'applique actuellement sur notre adresse IP, c'est-à-dire "ban". On utilise la commande ci-dessous en remplaçant "X.X.X.X" par l'IP publique correspondante.
-
-sudo cscli decisions delete --ip X.X.X.X
-
-Ensuite, il faut que l'on simule un accès depuis un user-agent non autorisé, car si j'utilise Firefox, Chrome, Brave, Edge, etc... cela ne fonctionnera pas, car ce sont des user-agent légitimes. Pour cela, on peut se référer à la liste de user-agents malveillants relayée par CrowdSec sur GitHub. Pour l'outil à utiliser, on partira sur l'excellent Curl que l'on a déjà utilisé précédemment.
-
-Nous allons utiliser le modèle de commande suivant :
-
-curl -I it-connect.tech -H "User-Agent: <nom-user-agent>"
-
-Voici quelques exemples :
-
-curl -I it-connect.tech -H "User-Agent: Cocolyzebot"
-curl -I it-connect.tech -H "User-Agent: Mozlila"
-curl -I it-connect.tech -H "User-Agent: OpenVAS"
-curl -I it-connect.tech -H "User-Agent: Nikto"
-
-En effectuant deux-trois requêtes Curl à destination de notre site, on se retrouve rapidement avec un code d'erreur HTTP : 401 Unauthorized. Comprenez accès non autorisé.
-
-Maintenant que je suis bloqué par CrowdSec, on va utiliser un navigateur classique pour voir comment réagit le serveur Web.
-
-Aaaaah ! Bonne nouvelle ! Une page avec un captcha s'affiche ! Pour outrepasser le blocage, il suffit de compléter le captcha, de cliquer sur "Continue", afin d'accéder au site.
-CrowdSec - Page de blocage avec captcha
-CrowdSec - Page de blocage avec captcha
-
-Si on liste les décisions actives, on peut voir que mon adresse IP est bien associée à l'action "captcha" au lieu de l'action "ban". On peut voir aussi que mon instance CrowdSec a banni quelqu'un d'autre, qui visiblement, s'en prend à mon serveur Web.
-
-sudo cscli decisions list
-
-Si l'on effectue un scan avec Nikto comme nous l'avons fait à plusieurs reprises dans cette démonstration, nous n'aurons pas le captcha, nous allons être directement bannis. En fait, il y a bien un user-agent Nikto, mais le scan avec cet outil va générer d'autres alertes avant celle sur le user-agent, ce qui implique que c'est l'action "bannir" qui va s'appliquer avant l'action "captcha". En soi, ce n'est pas plus mal, car quelqu'un qui scanne notre serveur Web, on préfère qu"il soit bloqué
+Répétez trois fois la commande, puis tentez de naviguer depuis votre navigateur internet favori, vous tomberez sur le captcha. Vous pourrez également voir dans les ips bannis votre ip, avec comme règle _captcha_.
