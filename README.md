@@ -33,10 +33,10 @@ On test un accès depuis votre navigateur préféré en vous rendant sur http://
 
 Plusieurs modes seront nécessaires:
 
-    "deflate" pour la gestion de la compression, notamment en gzip, pour utiliser la mise en cache des pages sur votre site
-    "headers" afin de pouvoir agir sur les en-têtes HTTP
-    "ssl" pour gérer les certificats SSL et donc l'utilisation du protocole HTTPS
-    "rewrite" pour la réécriture d'URI
+   * "deflate" pour la gestion de la compression, notamment en gzip, pour utiliser la mise en cache des pages sur votre site
+   * "headers" afin de pouvoir agir sur les en-têtes HTTP
+   * "ssl" pour gérer les certificats SSL et donc l'utilisation du protocole HTTPS
+   * "rewrite" pour la réécriture d'URI
 
 ```
 a2enmod rewrite
