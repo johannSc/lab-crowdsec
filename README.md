@@ -167,80 +167,89 @@ On peut voir aussi que mon analyse avec Nikto a généré plusieurs alertes:
 cscli alerts list
 ```
 
+Nous voyons ici que crowdsec remonte des alertes, mais il n'y a pas d'action menées. Pour cela nous allons devoir installer un _bouncer_ (videur) qui traitera les alertes
+
 ### Installation de PHP Composer
 
-Pour déployer le Bouncer PHP sur son serveur, il faut installer Composer sinon il ne s'installera pas correctement. Pour l'installer, nous avons besoin de deux paquets : php-cli et unzip, que l'on va installer sans plus attendre :
+Pour déployer le bouncer PHP sur son serveur, il faut installer Composer sinon il ne s'installera pas correctement.
 
-sudo apt-get update
-sudo apt-get install php-cli unzip
+Déployons donc au préalable:
+
+
+```
+apt install php-cli unzip
+```
 
 Ensuite, il faut se positionner dans son répertoire racine et récupérer l'installeur avec Curl :
 
+```
 cd ~
 curl -sS https://getcomposer.org/installer -o composer-setup.php
+```
 
-Une fois qu'il est récupéré, il faut vérifier que le hash SHA-384 correspond bien à l'installeur que l'on vient de télécharger. Cela permet de s'assurer de l'intégrité du fichier. On stocke le hash dans une variable nommée "HASH" :
+Une fois qu'il est récupéré, il faut vérifier que le hash SHA-384 correspond bien à l'installeur que l'on vient de télécharger:
 
+```
 HASH=`curl -sS https://composer.github.io/installer.sig`
+```
 
 Puis, on lance la commande fournie sur le site officiel de Composer qui va permettre de vérifier le hash avant que l'installation soit lancée :
 
+```
 php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+```
 
 Vous devez obtenir le message "Installer verified". Sinon, cela signifie que votre installeur est corrompu, vous devez relancer le téléchargement.
 
 Enfin, lancez l'installation de Composer :
 
-sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+```
+php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+```
 
 Pour vérifier que l'installation est opérationnelle, exécutez simplement :
 
+```
 composer
-
-Vous devez obtenir ceci :
-
-Composer est correctement installé, vous pouvez passer à l'installation du Bouncer en lui-même.
-C. Mise en place du Bouncer PHP
-
-Souvenez-vous du premier tutoriel sur CrowdSec où j'utilisais un serveur NginX. J'avais utilisé le Bouncer NginX directement pour bloquer les adresses IP que CrowdSec souhaitait bannir. Cette fois-ci, comme nous n'utilisons pas NginX mais Apache, on va se tourner vers un autre Bouncer : PHP.
-
-    Note : le Bouncer PHP développé par CrowdSec prend en charge de nombreuses versions (PHP 7.2.x, 7.3.x, 7.4.x et 8.0.x).
-
-    Page du Bouncer PHP de CrowdSec
-    Page du Bouncer PHP sur GitHub
+```
 
 Nous avons besoin de Git pour installer ce Bouncer afin de cloner le projet. Pour installer Git :
 
-sudo apt-get install git
+```
+apt install git
+```
 
 Ensuite, on récupère le projet en le clonant en local :
 
+```
 git clone https://github.com/crowdsecurity/cs-php-bouncer.git
+```
 
-On obtient un dossier nommé "cs-php-bouncer" dans lequel on va se positionner :
+On obtient un dossier nommé "cs-php-bouncer" dans lequel on va se positionner puis on lance le script en précisant qu'on s'appuie sur apache:
 
-cd cs-php-bouncer/
-
-Puis, on lance le script d'installation (il ne doit pas être lancé avec le compte "root", ni "sudo" !) en spécifiant que l'on utilise le serveur Web "Apache" :
-
+```
 ./install.sh --apache
+```
 
-Installation du Bouncer PHP sur CrowdSec
-Installation du Bouncer PHP sur CrowdSec
+Enfin, on suit les instructions qui s'affichent à l'écran pour finaliser l'installation. On définit comme propriétaire sur le dossier "/usr/local/php/crowdsec/" l'utilisateur associé à Apache. Par défaut, il s'agit de l'utilisateur "www-data":
 
-Enfin, on suit les instructions qui s'affichent à l'écran pour finaliser l'installation. On définit comme propriétaire sur le dossier "/usr/local/php/crowdsec/" l'utilisateur associé à Apache. Par défaut, il s'agit de l'utilisateur "www-data".
-
+```
 sudo chown www-data /usr/local/php/crowdsec/
+```
 
 Puis, on termine en rechargeant la configuration d'Apache :
 
-sudo systemctl reload apache2
+```
+systemctl reload apache2
+```
 
-Si on liste les Bouncer installés sur notre serveur, on va voir qu'il apparaît dans la liste :
+Tentons de lister les bouncers installés sur notre serveur:
 
-sudo cscli bouncers list
+```
+cscli bouncers list
+```
 
-D. Deuxième scan avec Nikto : le bouncer PHP va-t-il se montrer intraitable ?
+### Deuxième scan avec Nikto : le bouncer PHP va-t-il se montrer intraitable
 
 Cette fois-ci, on devrait être en mesure de détecter l'attaque, de décider de bannir l'adresse IP de l'hôte "Nikto" et surtout d'appliquer la décision grâce au Bouncer PHP. C'est ce que nous allons vérifier.
 
