@@ -137,7 +137,7 @@ sudo cscli decisions list
 
 Pour l'instant il n'y a rien? c'est normal!
 
-## L'attaquant
+## Premier scan
 
 ### Nikto
 
@@ -249,7 +249,7 @@ Tentons de lister les bouncers installés sur notre serveur:
 cscli bouncers list
 ```
 
-### Nikto le retour
+## Second scan
 
 Relançons un second scan nikto depuis Kali:
 
