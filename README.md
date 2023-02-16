@@ -249,31 +249,31 @@ Tentons de lister les bouncers installés sur notre serveur:
 cscli bouncers list
 ```
 
-### Deuxième scan avec Nikto : le bouncer PHP va-t-il se montrer intraitable
+### Nikto le retour
 
-Cette fois-ci, on devrait être en mesure de détecter l'attaque, de décider de bannir l'adresse IP de l'hôte "Nikto" et surtout d'appliquer la décision grâce au Bouncer PHP. C'est ce que nous allons vérifier.
+Relançons un second scan nikto depuis Kali:
 
-On peut commencer par utiliser Curl pour vérifier que l'on obtient bien un code de retour HTTP 200.
+```
+nikto -h ip_Debian11
+```
 
-curl -I it-connect.tech
+Le scan se déroule, et normalement tombe en erreur au bout d'un certain temps sur une erreur 403. Ce qui indique qu'il y a bien un ban coté client.
 
-Puis, on lance notre scan Nikto :
+Si j'essaie d'accéder au site avec un navigateur, on peut voir qu'un message s'affiche pour indiquer que mon adresse IP a été bloquée par CrowdSec, le bouncer PHP est entré en action!
 
-nikto -h it-connect.tech
+On peut débannir manuellement une adresse IP avec la commande suivante:
 
-Cette fois-ci, le scan mouline un peu... Comme s'il était bloqué par quelque chose. Si on force son arrêt (CTRL+C) et que l'on relance la commande Curl, on peut voir que le code de retour HTTP a changé : HTTP/1.0 403 Forbidden. Ce qui correspond à un accès refusé sur la page, y compris si l'on essaie d'accéder au serveur avec l'adresse IP au lieu du nom.
-
-Si j'essaie d'accéder au site avec un navigateur, on peut voir qu'un message s'affiche pour indiquer que mon adresse IP a été bloquée par CrowdSec ! Le Bouncer PHP est entré en action !
-
-Je vous rappelle que l'on peut débannir manuellement une adresse IP avec la commande suivante (nous allons utiliser cette commande dans la suite du tutoriel) :
-
-sudo cscli decisions delete --ip X.X.X.X
+```
+cscli decisions delete --ip X.X.X.X
+```
 
 De la même façon, on peut aussi bannir manuellement une adresse IP :
 
-sudo cscli decisions add --ip X.X.X.X
+```
+cscli decisions add --ip X.X.X.X
+```
 
-V. Bouncer PHP : mise en place d'un captcha
+### Mise en place d'un captcha
 
 Avec la configuration actuelle, l'adresse IP sera bloquée pour une durée de 4 heures et l'utilisateur n'a pas de possibilité d'être débloqué pendant ce temps. À moins de prendre la peine de contacter le Webmaster du site...
 
@@ -294,6 +294,7 @@ Autrement dit, si l'on ajoute notre configuration spécifique à la suite dans l
 
 Voici le bout de code à ajouter au tout début du fichier :
 
+```
 # Bad User agents + Crawlers - Captcha 4H
 name: crawler_captcha_remediation
 filters:
@@ -303,6 +304,7 @@ decisions:
 duration: 4h
 on_success: break
 ---
+```
 
 La partie "filters" sert à spécifier que l'on cible seulement les scénarios d'alertes "http-crawl-non_statics" et "http-bad-user-agent". Ensuite, au niveau du "type", on spécifie "captcha" au lieu de "ban" qui est l'action standard.
 
