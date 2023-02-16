@@ -2,7 +2,7 @@
 
 - [Déploiement du serveur Web](#déploiement-du-serveur-web)
 - [Déploiement de crowdsec](#déploiement-de-crowdsec)
-- [Premier scan](#l-premier-scan)
+- [Premier scan](#premier-scan)
 - [Second scan](#second-scan)
 
 Pour ce lab nous allons utiliser deux VMs distinctes:
