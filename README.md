@@ -2,7 +2,7 @@
 
 - [Déploiement du serveur Web](#déploiement-du-serveur-web)
 - [Déploiement de crowdsec: déploiement-de-crowdsec](#nmap)
-- [ZAP: Le truc de pro](#zap)
+- [L'attaquant](#l'attaquant)
 - [DefectDojo: La représentation par graphes](#defectdojo)
 
 Pour ce lab nous allons utiliser deux VMs distinctes:
@@ -107,56 +107,67 @@ rm /var/www/html/index.html
 
 ## Déploiement de crowdsec
 
-Sur Debian 11, CrowdSec est directement dans les dépôts, ce qui va nous faciliter la vie. Il suffit de mettre à jour le cache des paquets et de lancer l'installation :
+Tout d'abord on va récupérer les dépôts de crowdsec:
 
-sudo apt-get update
-sudo apt-get install -y crowdsec
+```
+curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.deb.sh | sudo bash
+```
 
-Le cas échéant, si le paquet n'est pas disponible, vous devez utiliser cette méthode pour réaliser l'installation :
+Puis installation de l'outil:
 
-curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.deb.sh | sudo bash 
-sudo apt install crowdsec
+```
+apt install crowdsec
+```
 
 Lors de l'installation, CrowdSec va analyser votre machine afin de détecter les services présents et de télécharger les collections associées. Ces composants vont permettre à CrowdSec de détecter les attaques (sans les bloquer).
 
 On peut lister les collections avec la commande suivante :
 
+```
 cscli collections list
+```
 
-Si la collection "base-http-scenarios" est présente dans la liste, ce qui normalement le cas si vous avez déjà installé Apache sur votre serveur, cela va notamment permettre de bloquer les mauvais User Agents, comme ceux utilisés par certains outils de scans. Ceci n'est qu'un exemple, car cette collection va détecter d'autres événements comme la recherche de backdoors, etc.
+Si la collection "base-http-scenarios" est présente dans la liste, ce qui normalement le cas si vous avez déjà installé Apache sur votre serveur, cela va notamment permettre de bloquer les mauvais User Agents, comme ceux utilisés par certains outils de scans.
 
-On peut regarder si nous avons des décisions actives au niveau de notre instance CrowdSec. En toute logique, non. Vérifions que ce soit bien le cas avec la commande ci-dessous issue de "cscli", l'ensemble de commandes associées à CrowdSec.
+On peut regarder si nous avons des décisions actives au niveau de notre instance CrowdSec. 
 
+```
 sudo cscli decisions list
+```
+
+Pour l'instant il n'y a rien? c'est normal!
 
 ## L'attaquant
 
-appel : Nikto est un outil open source qui sert à analyser un serveur Web à la recherche de vulnérabilités ou de défaut de configuration.
+### Nikto
 
-Avant toute chose, il faut installer l'outil Nikto sur la machine qui sert à réaliser le scan. Pour ma part, j'utilise Kali Linux via WSL (Windows Subsystem for Linux).
+Nikto est un outil open source qui sert à analyser un serveur Web à la recherche de vulnérabilités ou de défaut de configuration.
 
-L'installation s'effectue très simplement :
+Déployons l'outil depuis la VM Kali:
 
-sudo apt-get update
-sudo apt-get install nikto
+```
+apt install nikto
+```
 
-Avant d'exécuter le scan Nikto, vous pouvez vérifier que votre machine Kali Linux parvient à charger la page d'accueil de votre site :
+Puis effectuons un premier scan sur la machine cible:
 
-curl -I it-connect.tech
+```
+nikto -h ip_debian1&
+```
 
-Si vous obtenez un résultat avec un code de retour HTTP égal à 200, c'est tout bon ! Maintenant, on va lancer un scan de notre serveur Web avec Nikto. Pour cela, on spécifie l'adresse IP de l'hôte cible ou le nom de domaine, et on laisse tourner. Comme ceci :
+Suite au scan avec Nikto, si vous retournez sur votre machine Debian, crowdsec a dû repérer le scan:
 
-nikto -h it-connect.tech
-
-Suite au scan avec Nikto, mon adresse IP est bien dans le viseur de CrowdSec puisqu'il a décidé de bannir mon adresse IP. Cependant, l'adresse IP n'est pas bloquée. En effet, CrowdSec doit s'appuyer sur un Bouncer pour appliquer la décision et bannir l'adresse IP.
-
+```
 sudo cscli decisions list
+```
 
-On peut voir aussi que mon analyse avec Nikto a généré plusieurs alertes, ce qui donne des indications sur les types d'attaques détectés (reason).
+On peut voir aussi que mon analyse avec Nikto a généré plusieurs alertes:
 
+```
 cscli alerts list
+```
 
-B. Installation de PHP Composer
+### Installation de PHP Composer
 
 Pour déployer le Bouncer PHP sur son serveur, il faut installer Composer sinon il ne s'installera pas correctement. Pour l'installer, nous avons besoin de deux paquets : php-cli et unzip, que l'on va installer sans plus attendre :
 
