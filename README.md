@@ -138,7 +138,7 @@ Si la collection "base-http-scenarios" est présente dans la liste, ce qui norma
 On peut regarder si nous avons des décisions actives au niveau de notre instance CrowdSec. 
 
 ```
-sudo cscli decisions list
+cscli decisions list
 ```
 
 Pour l'instant il n'y a rien? c'est normal!
