@@ -181,7 +181,7 @@ nikto -h ip_debian11
 Suite au scan avec Nikto, si vous retournez sur votre machine Debian, crowdsec a dû repérer le scan:
 
 ```
-sudo cscli decisions list
+cscli decisions list
 ```
 
 On peut voir aussi que mon analyse avec Nikto a généré plusieurs alertes:
