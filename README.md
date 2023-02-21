@@ -249,6 +249,36 @@ Puis, on termine en rechargeant la configuration d'Apache :
 systemctl reload apache2
 ```
 
+---------------------------> 
+
+Si à la suite de l'installation du bouncer Apache2 est instable (page blanche et erreur500), il est nécessaire de faire un upgrade du bouncer. Pour cela toujours sous le répertoire _cs-php-bouncer_ il faut tout d'abord éditer le script pour qu'il puisse se lancer en tant que _root_: 
+
+```
+nano upgrade.sh
+```
+
+Puis modifier la ligne :
+
+```
+if [ $(id -u) = 0 ]; then
+```
+
+Par: 
+
+```
+if [ $(id -u) = 1 ]; then
+```
+
+Enfin lancez l'upgrade
+
+```
+./upgrade.sh
+```
+
+Normalement vous pouvez à nouveau voir votre page PHP, plus d'erreur 500
+
+<---------------------------
+
 Tentons de lister les bouncers installés sur notre serveur:
 
 ```
