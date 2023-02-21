@@ -107,6 +107,12 @@ rm /var/www/html/index.html
 
 ## Déploiement de crowdsec
 
+On installe curl:
+
+```
+apt install curl
+```
+
 Tout d'abord on va récupérer les dépôts de crowdsec:
 
 ```
