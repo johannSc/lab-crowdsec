@@ -135,6 +135,22 @@ cscli collections list
 
 Si la collection "base-http-scenarios" est présente dans la liste, ce qui normalement le cas si vous avez déjà installé Apache sur votre serveur, cela va notamment permettre de bloquer les mauvais User Agents, comme ceux utilisés par certains outils de scans.
 
+--> Dans le cadre d'un réseau local, il faut désactiver les ranges d'ip privées, sinon crowdsec ne bloque pas les ips du même réseau.
+
+Il faut éditer le fichier YAML:
+
+```
+nano /etc/crowdsec/parsers/s02-enrich/whitelists.yaml
+```
+
+Puis supprimer le range d'ip qui concerne votre réseau local
+
+Ensuite redémarrez l'outil
+
+```
+systemctl restart crowdsec
+```
+
 On peut regarder si nous avons des décisions actives au niveau de notre instance CrowdSec. 
 
 ```
@@ -142,6 +158,7 @@ cscli decisions list
 ```
 
 Pour l'instant il n'y a rien? c'est normal!
+
 
 ## Premier scan
 
