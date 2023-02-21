@@ -158,7 +158,7 @@ apt install nikto
 Puis effectuons un premier scan sur la machine cible:
 
 ```
-nikto -h ip_debian1&
+nikto -h ip_debian11
 ```
 
 Suite au scan avec Nikto, si vous retournez sur votre machine Debian, crowdsec a dû repérer le scan:
