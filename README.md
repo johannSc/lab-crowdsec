@@ -307,7 +307,7 @@ cscli bouncers list
 Avant de lancer un scan, supprimer le ban en cours sur l'ip de Kali
 
 ```
-cscli decisions delete --ip_de_kali
+cscli decisions delete --ip ip_de_kali
 ```
 
 Relançons un second scan nikto depuis Kali:
