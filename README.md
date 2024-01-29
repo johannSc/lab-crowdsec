@@ -10,6 +10,8 @@ Pour ce lab nous allons utiliser deux VMs distinctes:
 * l'attaque via Kali (et principalement l'outil nikto)
 * le serveur web sous une Debian11 standart
 
+// les VMS doivent avoir le mode pont de paramétré sous VirtualBox
+
 ## Déploiement du serveur Web
 
 ### Apache
