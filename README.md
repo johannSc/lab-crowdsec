@@ -10,7 +10,27 @@ Pour ce lab nous allons utiliser deux VMs distinctes:
 * l'attaque via Kali (et principalement l'outil nikto)
 * le serveur web sous une Debian11 standart
 
+## Préparation du TP (maj 2024)
+
 // les VMS doivent avoir le mode pont de paramétré sous VirtualBox
+
+cf les options
+
+// un export du $PATH doit être effectué sous Debian
+
+Pour cela dans l'utilisateur comme pour le root éditez:
+
+/home/user/.bashrs (ou /root/.bashrc) et rajoutez à la fin du fichier:
+
+```
+export PATH=/usr/sbin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+```
+
+Puis sourcez le fichier:
+
+```
+source /home/user/.bashrc
+```
 
 ## Déploiement du serveur Web
 
