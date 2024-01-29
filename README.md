@@ -20,7 +20,7 @@ cf les options
 
 Pour cela dans l'utilisateur comme pour le root éditez:
 
-/home/user/.bashrs (ou /root/.bashrc) et rajoutez à la fin du fichier:
+/home/user/.bashrc (ou /root/.bashrc) et rajoutez à la fin du fichier:
 
 ```
 export PATH=/usr/sbin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
