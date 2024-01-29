@@ -14,7 +14,7 @@ Pour ce lab nous allons utiliser deux VMs distinctes:
 
 ### Apache
 
-Installer Apache sous Debian 12
+Installer Apache sous Debian 11
 
 On commence par mettre à jour le cache des paquets et installation des paquets:
 
