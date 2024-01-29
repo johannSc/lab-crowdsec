@@ -29,7 +29,17 @@ Pour qu'Apache démarre automatiquement en même temps que Debian, il faut activ
 systemctl enable apache2
 ```
 
-On test un accès depuis votre navigateur préféré en vous rendant sur http://localhost ou sur l'ip
+On test un accès depuis votre navigateur préféré en vous rendant sur http://localhost ou sur l'ip:
+
+```
+apt install curl
+```
+
+Puis test d'accès:
+
+```
+curl http://localhost
+```
 
 Plusieurs modes seront nécessaires:
 
