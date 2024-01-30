@@ -365,10 +365,16 @@ cscli decisions add --ip X.X.X.X
 
 ### Mise en place d'un captcha
 
--> Pour simulier un captcha, procédez de la manière suivante;
+-> Pour simulier un captcha, vous pouvez procéder de la manière suivante depuis la VM debian:
 
 ```
 cscli decisions add --ip ip_kali --type captcha
+```
+
+Ou depuis Kali en précisant un User-Agent connu pour être bloqué (n'hésitez pas à appeler plusieurs fois la commande curl pour être sûr que Crowdsec bloque:
+
+```
+curl --user-agent "Aboundex" http://ip_debian
 ```
 
 Avec la configuration actuelle, l'adresse IP sera bloquée pour une durée de 4 heures. Pour limiter l'impact des éventuels faux positifs sur la règle "bad user agents", nous allons présenter un captcha à l'utilisateur bloqué, plutôt qu'un blocage direct.
