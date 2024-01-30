@@ -384,7 +384,7 @@ Ce fichier contient une configuration par défaut qui sert à bloquer les adress
     http-crawl-non_statics
     http-bad-user-agent
 
-Voici le code à ajouter **au tout début** du fichier :
+Voici le code à ajouter **au tout début** du fichier (ATTENTION aux espaces):
 
 ```
 # Bad User agents + Crawlers - Captcha 4H
