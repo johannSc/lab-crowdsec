@@ -279,8 +279,6 @@ Puis on extrait le répertoire:
 tar -xzf bouncer-php.tar
 ```
 
-```
-
 On obtient un dossier nommé "cs-php-bouncer" dans lequel on va se positionner puis on lance le script en précisant qu'on s'appuie sur apache:
 
 ```
