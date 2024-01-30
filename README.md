@@ -152,7 +152,7 @@ curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.de
 Puis installation de l'outil:
 
 ```
-apt install crowdsec
+apt install crowdsec && apt install crowdsec-firewall-bouncer-iptables
 ```
 
 Lors de l'installation, CrowdSec va analyser votre machine afin de détecter les services présents et de télécharger les collections associées. Ces composants vont permettre à CrowdSec de détecter les attaques (sans les bloquer).
