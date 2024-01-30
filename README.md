@@ -262,16 +262,19 @@ Pour vérifier que l'installation est opérationnelle, exécutez simplement :
 composer
 ```
 
-Nous avons besoin de Git pour installer ce bouncer afin de cloner le projet. Pour installer Git :
+Nous avons besoin de récupérer le bouncer sur mon dépot en local :
 
 ```
-apt install git
-```
-
-Ensuite, on récupère le projet en le clonant en local :
+wget https://sandbox.scourzic.net/td/bouncer-php.tar
 
 ```
-git clone https://github.com/crowdsecurity/cs-php-bouncer.git
+
+Puis on extrait le répertoire:
+
+```
+tar -xzf bouncer-php.tar
+```
+
 ```
 
 On obtient un dossier nommé "cs-php-bouncer" dans lequel on va se positionner puis on lance le script en précisant qu'on s'appuie sur apache:
