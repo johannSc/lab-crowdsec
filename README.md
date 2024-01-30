@@ -18,9 +18,13 @@ cf les options
 
 // un export du $PATH doit être effectué sous Debian
 
-Pour cela dans l'utilisateur comme pour le root éditez:
+Pour cela dans le répertoire du root éditez:
 
-/home/user/.bashrc (ou /root/.bashrc) et rajoutez à la fin du fichier:
+```
+nano /root/.bashrc 
+```
+
+et rajoutez à la fin du fichier:
 
 ```
 export PATH=/usr/sbin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
@@ -29,7 +33,7 @@ export PATH=/usr/sbin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
 Puis sourcez le fichier:
 
 ```
-source /home/user/.bashrc
+source /root/.bashrc
 ```
 
 ## Déploiement du serveur Web
