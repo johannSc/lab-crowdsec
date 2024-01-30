@@ -368,7 +368,7 @@ cscli decisions add --ip X.X.X.X
 -> Pour simulier un captcha, procédez de la manière suivante;
 
 ```
-cscli decisions add --ip ip_kali --duration 5mn --type captcha
+cscli decisions add --ip ip_kali --type captcha
 ```
 
 Avec la configuration actuelle, l'adresse IP sera bloquée pour une durée de 4 heures. Pour limiter l'impact des éventuels faux positifs sur la règle "bad user agents", nous allons présenter un captcha à l'utilisateur bloqué, plutôt qu'un blocage direct.
